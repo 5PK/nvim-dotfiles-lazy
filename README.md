@@ -8,5 +8,3 @@ then why use vim?
 
 
 I try to keep my nvim config as clean as possible, so I try to a minimal amount of plugins. 
-# nvim-dotfiles-lazy
-# nvim-dotfiles-lazy
