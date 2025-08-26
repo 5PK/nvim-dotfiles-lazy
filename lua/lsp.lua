@@ -5,43 +5,7 @@
 require('luasnip.loaders.from_vscode').lazy_load()
 
 -- nvim-cmp setup
--- local cmp = require('cmp')
 local luasnip = require('luasnip')
-
--- cmp.setup({
---   snippet = {
---     expand = function(args)
---       luasnip.lsp_expand(args.body)
---     end,
---   },
---   mapping = cmp.mapping.preset.insert({
---     ['<C-b>'] = cmp.mapping.scroll_docs(-4),
---     ['<C-f>'] = cmp.mapping.scroll_docs(4),
---     ['<C-Space>'] = cmp.mapping.complete(),
---     ['<C-e>'] = cmp.mapping.abort(),
---     ['<CR>'] = cmp.mapping.confirm({ select = true }),
---     ['<Tab>'] = cmp.mapping.select_next_item(),
---     ['<S-Tab>'] = cmp.mapping.select_prev_item(),
---   }),
---   sources = cmp.config.sources({
---     { name = 'nvim_lsp' },
---     { name = 'luasnip' },
---   }, {
---     { name = 'buffer' },
---   }),
--- })
---
--- -- nvim-autopairs setup
--- local cmp_autopairs = require('nvim-autopairs.completion.cmp')
--- local cmp = require('cmp')
---
--- cmp.event:on(
---   'confirm_done',
---   cmp_autopairs.on_confirm_done()
--- )
-
--- LSP capabilities
--- local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
 -- Language server configurations
 local lspconfig = require('lspconfig')
@@ -160,6 +124,41 @@ prettier.setup({
     'typescript',
     'typescriptreact',
     'yaml',
+  },
+})
+
+-- C# (Roslyn)
+vim.lsp.config("roslyn", {
+  on_attach = function(client, bufnr)
+    -- Enable code lens
+    if client.server_capabilities.codeLensProvider then
+      vim.lsp.codelens.refresh()
+      -- Auto-refresh on buffer enter/write
+      vim.api.nvim_create_autocmd({"BufEnter", "BufWritePost"}, {
+        buffer = bufnr,
+        callback = function()
+          vim.lsp.codelens.refresh()
+        end,
+      })
+    end
+    
+    -- Standard LSP keymaps
+    local opts = { noremap = true, silent = true, buffer = bufnr }
+    vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
+    vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
+    vim.keymap.set('n', 'gr', require('telescope.builtin').lsp_references, opts)
+    vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, opts)
+    vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, opts)
+    vim.keymap.set('n', '<leader>cl', vim.lsp.codelens.run, opts)
+  end,
+  settings = {
+    ["csharp|inlay_hints"] = {
+      csharp_enable_inlay_hints_for_implicit_object_creation = true,
+      csharp_enable_inlay_hints_for_implicit_variable_types = true,
+    },
+    ["csharp|code_lens"] = {
+      dotnet_enable_references_code_lens = true,
+    },
   },
 })
 
